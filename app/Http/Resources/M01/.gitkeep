@@ -1,0 +1,8 @@
+# M01 API Resources Directory
+# Namespace: App\Http\Resources\M01
+#
+# This directory contains all API resource classes for Module M01
+# API Resources to be implemented:
+# - UserResource
+# - CompanyResource
+# - AuditLogResource

@@ -1,0 +1,9 @@
+# M01 Controllers Directory
+# Namespace: App\Http\Controllers\M01
+# 
+# This directory contains all controllers for Module M01: Profil Pelanggan
+# Controllers to be implemented:
+# - AuthController
+# - ProfileController  
+# - CompanyController
+# - AccountController

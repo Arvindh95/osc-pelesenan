@@ -1,0 +1,12 @@
+# M01 Services Directory
+# Namespace: App\Services\M01
+#
+# This directory contains all service classes for Module M01 business logic
+# Services to be implemented:
+# - AuthService
+# - IdentityVerificationService
+# - CompanyService
+# - AccountService
+# - AuditService
+# - MockIdentityClient
+# - MockSSMClient

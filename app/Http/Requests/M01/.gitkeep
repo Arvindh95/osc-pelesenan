@@ -1,0 +1,10 @@
+# M01 Form Requests Directory
+# Namespace: App\Http\Requests\M01
+#
+# This directory contains all form request validation classes for Module M01
+# Form Requests to be implemented:
+# - RegisterRequest
+# - LoginRequest
+# - VerifyIdentityRequest
+# - VerifySSMRequest
+# - LinkCompanyRequest
