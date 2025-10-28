@@ -9,7 +9,7 @@ import SubmitButton from '../../components/shared/SubmitButton';
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
 
   const form = useForm<LoginData>({
     initialData: {
@@ -29,12 +29,12 @@ function LoginPage() {
     },
   });
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (but wait for loading to complete)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!isLoading && isAuthenticated) {
       navigate('/dashboard');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

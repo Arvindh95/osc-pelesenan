@@ -128,6 +128,7 @@ export interface CompanyContextType {
   linkCompany: (companyId: number) => Promise<CompanyLinkResponse>;
   getMyCompanies: () => Promise<Company[]>;
   getAllCompanies: () => Promise<Company[]>;
+  getAvailableCompanies: () => Promise<Company[]>;
   clearError: () => void;
 }
 

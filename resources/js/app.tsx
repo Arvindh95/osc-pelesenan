@@ -9,6 +9,7 @@ import ErrorBoundary from './components/shared/ErrorBoundary';
 import NotificationContainer from './components/shared/NotificationContainer';
 import {
   LazyPageWrapper,
+  LazyVerifiedWrapper,
   LazyAdminWrapper,
 } from './components/shared/LazyWrapper';
 import { createLazyComponent } from './utils/performance';
@@ -96,25 +97,25 @@ function App() {
                   <Route
                     path="/companies"
                     element={
-                      <LazyPageWrapper>
+                      <LazyVerifiedWrapper>
                         <CompanyManagementPage />
-                      </LazyPageWrapper>
+                      </LazyVerifiedWrapper>
                     }
                   />
                   <Route
                     path="/companies/verify"
                     element={
-                      <LazyPageWrapper>
+                      <LazyVerifiedWrapper>
                         <CompanyManagementPage />
-                      </LazyPageWrapper>
+                      </LazyVerifiedWrapper>
                     }
                   />
                   <Route
                     path="/companies/link"
                     element={
-                      <LazyPageWrapper>
+                      <LazyVerifiedWrapper>
                         <CompanyManagementPage />
-                      </LazyPageWrapper>
+                      </LazyVerifiedWrapper>
                     }
                   />
                   <Route

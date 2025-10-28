@@ -10,6 +10,7 @@ use App\Services\M01\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -35,6 +36,7 @@ class AuthController extends Controller
                 'token' => $token,
             ], 201);
         } catch (\Exception $e) {
+            Log::error('Registration error: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Registration failed.',
                 'error' => $e->getMessage(),
@@ -52,7 +54,7 @@ class AuthController extends Controller
     {
         try {
             $token = $this->authService->login($request->validated());
-            $user = Auth::user();
+            $user = Auth::guard('web')->user();
 
             return response()->json([
                 'user' => new UserResource($user),
@@ -60,9 +62,11 @@ class AuthController extends Controller
             ]);
         } catch (ValidationException $e) {
             return response()->json([
-                'message' => 'Invalid credentials',
-            ], 401);
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
+            Log::error('Login error: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Login failed.',
                 'error' => $e->getMessage(),
@@ -73,6 +77,7 @@ class AuthController extends Controller
     /**
      * Log out the authenticated user.
      *
+     * @param Request $request
      * @return JsonResponse
      */
     public function logout(Request $request): JsonResponse
@@ -92,9 +97,10 @@ class AuthController extends Controller
                 'message' => 'Successfully logged out.',
             ]);
         } catch (\Exception $e) {
+            Log::error('Logout error: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Logout failed.',
-                'error' => $e->getMessage(),
+                'message' => 'Ralat pelayan. Sila cuba lagi kemudian.',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

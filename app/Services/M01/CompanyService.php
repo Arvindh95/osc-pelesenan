@@ -117,6 +117,31 @@ class CompanyService
     }
 
     /**
+     * Get available companies that can be linked by the user.
+     * Returns only companies that the user has verified but not yet linked.
+     *
+     * @param User $user The user requesting available companies
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAvailableCompanies(User $user): \Illuminate\Database\Eloquent\Collection
+    {
+        // Get company IDs that this user has verified (from audit logs)
+        $verifiedCompanyIds = DB::table('audit_logs')
+            ->where('actor_id', $user->id)
+            ->where('action', 'company_verified')
+            ->where('entity_type', Company::class)
+            ->pluck('entity_id')
+            ->toArray();
+
+        // Return companies that the user verified and are available for linking
+        return Company::whereIn('id', $verifiedCompanyIds)
+            ->whereNull('owner_user_id')
+            ->where('status', '!=', 'unknown')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
      * Create or update company record based on SSM verification.
      *
      * @param string $ssmNo The SSM number

@@ -73,9 +73,9 @@ const CompanyLinking: React.FC<CompanyLinkingProps> = ({
     setError(null);
   };
 
-  // Filter out companies that are already owned by someone
+  // Filter out companies that are already owned by someone or have unknown status
   const linkableCompanies = availableCompanies.filter(
-    company => company.owner_user_id === null && company.status === 'active'
+    company => company.owner_user_id === null && company.status !== 'unknown'
   );
 
   return (
@@ -139,8 +139,12 @@ const CompanyLinking: React.FC<CompanyLinkingProps> = ({
                         <p className="text-sm font-medium text-gray-900">
                           {company.name}
                         </p>
-                        <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-                          Aktif
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          company.status === 'active'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {company.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
                         </span>
                       </div>
                       <p className="text-sm text-gray-500">

@@ -23,7 +23,7 @@ function CompanyManagementPage() {
     isLoading,
     error,
     getMyCompanies,
-    getAllCompanies,
+    getAvailableCompanies,
     clearError,
   } = useCompany();
   const { addNotification } = useNotification();
@@ -50,11 +50,11 @@ function CompanyManagementPage() {
 
   const loadAllCompanies = async () => {
     try {
-      const companies = await getAllCompanies();
+      const companies = await getAvailableCompanies();
       setAllCompanies(companies);
     } catch (error) {
       // Error is handled by context, but we might want to show a notification
-      console.error('Failed to load all companies:', error);
+      console.error('Failed to load available companies:', error);
     }
   };
 
@@ -126,9 +126,9 @@ function CompanyManagementPage() {
     threshold: 100,
   });
 
-  // Get companies available for linking (not owned by anyone and active)
+  // Get companies available for linking (not owned by anyone and not unknown)
   const availableCompanies = allCompanies.filter(
-    company => company.owner_user_id === null && company.status === 'active'
+    company => company.owner_user_id === null && company.status !== 'unknown'
   );
 
   const pageContent = (

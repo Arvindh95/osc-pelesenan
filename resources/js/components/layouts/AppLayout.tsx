@@ -117,20 +117,22 @@ export default function AppLayout({
                 >
                   Identity Verification
                 </Link>
-                <Link
-                  to="/companies"
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                    location.pathname.startsWith('/companies')
-                      ? 'text-blue-600 bg-blue-50 border-b-2 border-blue-600'
-                      : 'text-gray-700 hover:text-blue-600'
-                  }`}
-                  role="menuitem"
-                  {...createNavItemAria(
-                    location.pathname.startsWith('/companies')
-                  )}
-                >
-                  Company Management
-                </Link>
+                {user?.status_verified_person && (
+                  <Link
+                    to="/companies"
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      location.pathname.startsWith('/companies')
+                        ? 'text-blue-600 bg-blue-50 border-b-2 border-blue-600'
+                        : 'text-gray-700 hover:text-blue-600'
+                    }`}
+                    role="menuitem"
+                    {...createNavItemAria(
+                      location.pathname.startsWith('/companies')
+                    )}
+                  >
+                    Company Management
+                  </Link>
+                )}
                 {user?.role === 'PENTADBIR_SYS' && (
                   <Link
                     to="/admin/companies"

@@ -154,7 +154,10 @@ export function enhanceError(
 }
 
 // Error logging utility
-export function logError(error: EnhancedError): void {
+export function logError(error: EnhancedError, silent = false): void {
+  // Skip logging if silent flag is set (for expected errors)
+  if (silent) return;
+
   // Always log errors in development-like environments
   // In production, you might want to send to error tracking service
   console.group(`🚨 Error [${error.type.toUpperCase()}]`);
@@ -235,7 +238,8 @@ export function calculateRetryDelay(
 export async function withRetry<T>(
   operation: () => Promise<T>,
   config: RetryConfig = DEFAULT_RETRY_CONFIG,
-  context?: Record<string, unknown>
+  context?: Record<string, unknown>,
+  silent = false
 ): Promise<T> {
   let lastError: ApiError;
 
@@ -248,13 +252,13 @@ export async function withRetry<T>(
 
       // Don't retry if error is not retryable
       if (!enhancedError.retryable) {
-        logError(enhancedError);
+        logError(enhancedError, silent);
         throw enhancedError;
       }
 
       // Don't retry on last attempt
       if (attempt === config.maxRetries) {
-        logError(enhancedError);
+        logError(enhancedError, silent);
         throw enhancedError;
       }
 
@@ -262,10 +266,12 @@ export async function withRetry<T>(
       const delay = calculateRetryDelay(attempt, config);
       await new Promise(resolve => setTimeout(resolve, delay));
 
-      // Log retry attempt
-      console.warn(
-        `🔄 Retrying operation (attempt ${attempt + 1}/${config.maxRetries}) after ${delay}ms`
-      );
+      // Log retry attempt (unless silent)
+      if (!silent) {
+        console.warn(
+          `🔄 Retrying operation (attempt ${attempt + 1}/${config.maxRetries}) after ${delay}ms`
+        );
+      }
     }
   }
 

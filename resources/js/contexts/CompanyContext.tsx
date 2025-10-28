@@ -168,6 +168,22 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({
     }
   };
 
+  // Get available companies (verified users)
+  const getAvailableCompanies = async (): Promise<Company[]> => {
+    dispatch({ type: 'SET_LOADING', payload: true });
+    dispatch({ type: 'CLEAR_ERROR' });
+
+    try {
+      const companies = await apiClient.getAvailableCompanies();
+      dispatch({ type: 'SET_ALL_COMPANIES', payload: companies });
+      return companies;
+    } catch (error) {
+      const apiError = error as ApiError;
+      dispatch({ type: 'SET_ERROR', payload: apiError.message });
+      throw error;
+    }
+  };
+
   // Clear error
   const clearError = () => {
     dispatch({ type: 'CLEAR_ERROR' });
@@ -181,6 +197,7 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({
     linkCompany,
     getMyCompanies,
     getAllCompanies,
+    getAvailableCompanies,
     clearError,
   };
 

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, LoginData, RegisterData } from '../types';
 import api from '../services/apiClient';
 
@@ -9,6 +9,8 @@ interface AuthContextType {
   login: (data: LoginData) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
+  updateProfile: (data: { name?: string; email?: string }) => Promise<void>;
+  deactivateAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,8 +25,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const user = await api.getCurrentUser();
       setUser(user);
     } catch (error) {
+      // If user fetch fails (e.g., 401), clear auth state
+      // This is expected when user is not logged in, so we silently handle it
       setUser(null);
-      // Clear localStorage if user fetch fails
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user_data');
     } finally {
@@ -60,6 +63,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateProfile = async (data: { name?: string; email?: string }) => {
+    const response = await api.updateProfile(data);
+    setUser(response.user);
+  };
+
+  const deactivateAccount = async () => {
+    await api.deactivateAccount();
+    // Clear auth state after deactivation
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_data');
+    setUser(null);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -69,6 +85,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         register,
         logout,
+        updateProfile,
+        deactivateAccount,
       }}
     >
       {children}

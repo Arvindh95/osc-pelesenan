@@ -34,6 +34,9 @@ Route::middleware(['feature:MODULE_M01', 'auth:sanctum', 'active.user'])->group(
     
     // Profile management routes
     Route::prefix('profile')->name('profile.')->group(function () {
+        Route::put('/', [ProfileController::class, 'update'])
+        ->name('update');
+        
         Route::post('verify-identity', [ProfileController::class, 'verifyIdentity'])
             ->name('verify-identity');
     });
@@ -48,7 +51,11 @@ Route::middleware(['feature:MODULE_M01', 'auth:sanctum', 'active.user'])->group(
         
         Route::get('my-companies', [CompanyController::class, 'myCompanies'])
             ->name('my-companies');
-        
+
+        Route::get('available', [CompanyController::class, 'available'])
+            ->name('available')
+            ->middleware('verified');
+
         Route::get('all', [CompanyController::class, 'index'])
             ->name('all')
             ->middleware('can:viewAny,App\Models\Company');

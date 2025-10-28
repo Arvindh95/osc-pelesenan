@@ -134,4 +134,27 @@ class CompanyController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get available companies that the authenticated user has verified but not yet linked.
+     * Accessible to verified users.
+     *
+     * @return JsonResponse
+     */
+    public function available(): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+            $companies = $this->companyService->getAvailableCompanies($user);
+
+            return response()->json([
+                'companies' => CompanyResource::collection($companies),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve available companies.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

@@ -10,7 +10,7 @@ import SubmitButton from '../../components/shared/SubmitButton';
 
 function RegisterPage() {
   const navigate = useNavigate();
-  const { register, isAuthenticated } = useAuth();
+  const { register, isAuthenticated, isLoading } = useAuth();
 
   const form = useForm<RegisterData>({
     initialData: {
@@ -28,17 +28,22 @@ function RegisterPage() {
       ic_no: COMMON_RULES.icNumber,
     },
     onSubmit: async data => {
-      await register(data);
+      // Strip dashes from IC number before submitting
+      const cleanedData = {
+        ...data,
+        ic_no: data.ic_no.replace(/\D/g, ''), // Remove all non-digit characters
+      };
+      await register(cleanedData);
       navigate('/dashboard');
     },
   });
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (but wait for loading to complete)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!isLoading && isAuthenticated) {
       navigate('/dashboard');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
+
 
 class AuthService
 {
@@ -84,16 +86,28 @@ class AuthService
      */
     public function logout(User $user): void
     {
-        // Revoke current token if it exists
         $currentToken = $user->currentAccessToken();
-        if ($currentToken) {
-            $user->tokens()->where('id', $currentToken->id)->delete();
+
+        if ($currentToken instanceof \Laravel\Sanctum\PersonalAccessToken) {
+            // Token-based auth → delete the token
+            $currentToken->delete();
+        } else {
+            // Session-based (SPA) auth → log out the session
+            Auth::guard('web')->logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
         }
 
-        // Create audit log entry for logout
-        $this->auditService->logAuthEvent('user_logged_out', $user, [
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        // Audit logging
+        try {
+            $this->auditService->logAuthEvent('user_logged_out', $user, [
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Audit logging failed during logout: ' . $e->getMessage());
+        }
     }
+
+
 }

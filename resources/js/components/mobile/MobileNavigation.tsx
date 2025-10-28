@@ -77,7 +77,7 @@ export default function MobileNavigation({
   }, [isOpen]);
 
   // Navigation items for keyboard navigation
-  const navigationItems = [
+  const baseNavigationItems = [
     {
       name: 'Dashboard',
       href: '/dashboard',
@@ -127,27 +127,6 @@ export default function MobileNavigation({
       ),
     },
     {
-      name: 'Company Management',
-      href: '/companies',
-      id: 'nav-companies',
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-          />
-        </svg>
-      ),
-    },
-    {
       name: 'Account Settings',
       href: '/settings',
       id: 'nav-settings',
@@ -175,6 +154,32 @@ export default function MobileNavigation({
       ),
     },
   ];
+
+  // Add Company Management item only if user is verified
+  const navigationItems = [...baseNavigationItems];
+  if (user?.status_verified_person) {
+    navigationItems.splice(2, 0, {
+      name: 'Company Management',
+      href: '/companies',
+      id: 'nav-companies',
+      icon: (
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
+        </svg>
+      ),
+    });
+  }
 
   // Add admin item if user is admin
   if (user?.role === 'PENTADBIR_SYS') {

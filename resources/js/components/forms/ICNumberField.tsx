@@ -45,15 +45,10 @@ const ICNumberField = forwardRef<HTMLInputElement, ICNumberFieldProps>(
         const limitedDigits = digitsOnly.substring(0, 12);
         const formattedValue = formatICNumber(limitedDigits);
 
-        // Create a new event with the formatted value to keep the input controlled.
-        const newEvent = {
-          ...e,
-          target: {
-            ...e.target,
-            value: formattedValue,
-          },
-        };
-        onChange(newEvent as React.ChangeEvent<HTMLInputElement>);
+        // Instead of creating a synthetic event, directly modify the target value
+        // This preserves all event properties and works with React's controlled inputs
+        e.target.value = formattedValue;
+        onChange(e);
       },
       [onChange]
     );

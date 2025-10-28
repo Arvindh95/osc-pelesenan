@@ -46,17 +46,17 @@ class ApiClient {
     // Request interceptor
     this.client.interceptors.request.use(
       config => {
-        // Add CSRF token if available
-        const csrfToken = document
-          .querySelector('meta[name="csrf-token"]')
-          ?.getAttribute('content');
-        if (csrfToken) {
-          config.headers['X-CSRF-TOKEN'] = csrfToken;
+        // Always attach token if available
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          config.headers['Authorization'] = `Bearer ${token}`;
         }
+
         return config;
       },
       error => Promise.reject(error)
     );
+
 
     // Response interceptor
     this.client.interceptors.response.use(
@@ -64,7 +64,8 @@ class ApiClient {
       (error: AxiosError) => {
         if (error.response?.status === 401) {
           this.clearAuthToken();
-          window.location.href = '/login';
+          // Don't redirect here - let the component handle it
+          // This prevents infinite redirect loops
         }
         return Promise.reject(this.handleError(error));
       }
@@ -137,7 +138,8 @@ class ApiClient {
   private async retryRequest<T>(
     requestFn: () => Promise<T>,
     retries: number = this.defaultRetries,
-    delay: number = this.defaultRetryDelay
+    delay: number = this.defaultRetryDelay,
+    silent: boolean = false
   ): Promise<T> {
     const retryConfig: RetryConfig = {
       maxRetries: retries,
@@ -156,7 +158,7 @@ class ApiClient {
         }
         throw axiosError;
       }
-    }, retryConfig);
+    }, retryConfig, undefined, silent);
   }
 
   private shouldRetry(error: AxiosError): boolean {
@@ -207,17 +209,24 @@ class ApiClient {
   }
 
   async getCurrentUser(): Promise<User> {
-    const response = await this.retryRequest(() =>
-      this.client.get<User>('/user')
+    // Silent mode: don't log 401 errors since they're expected when not logged in
+    const response = await this.retryRequest(
+      () => this.client.get<User>('/user'),
+      this.defaultRetries,
+      this.defaultRetryDelay,
+      true // silent mode for auth checks
     );
     return response.data;
   }
 
   // Identity verification methods
   async verifyIdentity(icNo: string): Promise<VerificationResponse> {
+    // Ensure IC number contains only digits
+    const cleanIcNo = icNo.replace(/\D/g, '');
+
     const response = await this.retryRequest(() =>
       this.client.post<VerificationResponse>('/profile/verify-identity', {
-        ic_no: icNo,
+        ic_no: cleanIcNo,
       })
     );
     return response.data;
@@ -252,6 +261,13 @@ class ApiClient {
   async getAllCompanies(): Promise<Company[]> {
     const response = await this.retryRequest(() =>
       this.client.get<{ companies: Company[] }>('/company/all')
+    );
+    return response.data.companies;
+  }
+
+  async getAvailableCompanies(): Promise<Company[]> {
+    const response = await this.retryRequest(() =>
+      this.client.get<{ companies: Company[] }>('/company/available')
     );
     return response.data.companies;
   }

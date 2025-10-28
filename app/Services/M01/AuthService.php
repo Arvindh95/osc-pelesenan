@@ -84,9 +84,11 @@ class AuthService
      */
     public function logout(User $user): void
     {
-        // Revoke current token if it exists
+        // Get the current token
         $currentToken = $user->currentAccessToken();
-        if ($currentToken) {
+        
+        // Only delete if it's a real token (has an ID property)
+        if ($currentToken && property_exists($currentToken, 'id')) {
             $user->tokens()->where('id', $currentToken->id)->delete();
         }
 
