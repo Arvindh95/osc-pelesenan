@@ -11,6 +11,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateProfile: (data: { name?: string; email?: string }) => Promise<void>;
   deactivateAccount: () => Promise<void>;
+  verifyIdentity: (icNo: string) => Promise<{ verified: boolean; message: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,6 +77,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const verifyIdentity = async (icNo: string) => {
+    try {
+      // Example API endpoint call
+      const response = await fetch(`/api/verify-identity`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ic_no: icNo }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to verify identity.');
+      }
+
+      const data = await response.json();
+      return { verified: data.verified, message: data.message };
+    } catch (error) {
+      console.error('Error verifying identity:', error);
+      return { verified: false, message: 'Ralat berlaku semasa pengesahan.' };
+    }
+  };
+
+
   return (
     <AuthContext.Provider
       value={{
@@ -87,6 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         updateProfile,
         deactivateAccount,
+        verifyIdentity,
       }}
     >
       {children}

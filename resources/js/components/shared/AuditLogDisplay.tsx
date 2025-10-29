@@ -29,16 +29,7 @@ export default function AuditLogDisplay({
     setIsLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        per_page: limit.toString(),
-      });
-
-      if (action) {
-        params.append('action', action);
-      }
-
-      const response = await apiClient.getAuditLogs(page, limit);
+      const response = await apiClient.getAuditLogs(page, limit, action || undefined);
 
       setLogs(response.logs || []);
       if (response.pagination) {

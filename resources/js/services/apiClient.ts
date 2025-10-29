@@ -291,7 +291,8 @@ class ApiClient {
   // Audit log methods
   async getAuditLogs(
     page: number = 1,
-    perPage: number = 10
+    perPage: number = 10,
+    action?: string
   ): Promise<{
     logs: Array<{
       id: number;
@@ -309,8 +310,12 @@ class ApiClient {
       total: number;
     };
   }> {
+    let url = `/audit/logs?page=${page}&per_page=${perPage}`;
+    if (action) {
+      url += `&action=${encodeURIComponent(action)}`;
+    }
     const response = await this.retryRequest(() =>
-      this.client.get(`/audit/logs?page=${page}&per_page=${perPage}`)
+      this.client.get(url)
     );
     return response.data;
   }

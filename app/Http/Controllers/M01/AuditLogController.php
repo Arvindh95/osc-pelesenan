@@ -22,9 +22,16 @@ class AuditLogController extends Controller
             $user = Auth::user();
             $perPage = min($request->get('per_page', 10), 50); // Max 50 per page
             $page = $request->get('page', 1);
+            $action = $request->get('action');
 
-            $query = AuditLog::where('actor_id', $user->id)
-                ->orderBy('created_at', 'desc');
+            $query = AuditLog::where('actor_id', $user->id);
+
+            // Filter by action if provided
+            if ($action) {
+                $query->where('action', $action);
+            }
+
+            $query->orderBy('created_at', 'desc');
 
             $auditLogs = $query->paginate($perPage, ['*'], 'page', $page);
 
