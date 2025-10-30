@@ -41,6 +41,20 @@ const AuditLogsPage = createLazyComponent(
   () => import('./pages/AuditLogsPage')
 );
 
+// M02 License Management Pages - lazy loaded
+const LicensesListPage = createLazyComponent(
+  () => import('./pages/licenses/LicensesListPage')
+);
+const LicenseCreatePage = createLazyComponent(
+  () => import('./pages/licenses/LicenseCreatePage')
+);
+const LicenseEditPage = createLazyComponent(
+  () => import('./pages/licenses/LicenseEditPage')
+);
+const LicenseDetailsPage = createLazyComponent(
+  () => import('./pages/licenses/LicenseDetailsPage')
+);
+
 function App() {
   // Initialize performance monitoring
   const { generateReport } = useBundlePerformance();
@@ -140,6 +154,40 @@ function App() {
                       <LazyPageWrapper>
                         <AuditLogsPage />
                       </LazyPageWrapper>
+                    }
+                  />
+
+                  {/* M02 License Management Routes - Lazy Loaded */}
+                  <Route
+                    path="/licenses"
+                    element={
+                      <LazyVerifiedWrapper>
+                        <LicensesListPage />
+                      </LazyVerifiedWrapper>
+                    }
+                  />
+                  <Route
+                    path="/licenses/new"
+                    element={
+                      <LazyVerifiedWrapper>
+                        <LicenseCreatePage />
+                      </LazyVerifiedWrapper>
+                    }
+                  />
+                  <Route
+                    path="/licenses/:id/edit"
+                    element={
+                      <LazyVerifiedWrapper>
+                        <LicenseEditPage />
+                      </LazyVerifiedWrapper>
+                    }
+                  />
+                  <Route
+                    path="/licenses/:id"
+                    element={
+                      <LazyVerifiedWrapper>
+                        <LicenseDetailsPage />
+                      </LazyVerifiedWrapper>
                     }
                   />
 

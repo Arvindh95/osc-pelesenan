@@ -11,6 +11,16 @@ import {
   User,
   RequestConfig,
 } from '../types';
+import {
+  License,
+  LicenseListParams,
+  LicenseListResponse,
+  CreateLicenseRequest,
+  UpdateLicenseRequest,
+  LicenseDocument,
+  JenisLesen,
+  Requirement,
+} from '../types/license';
 import { withRetry, RetryConfig } from '../utils/errorHandler';
 
 class ApiClient {
@@ -18,6 +28,24 @@ class ApiClient {
   private token: string | null = null;
   private defaultRetries: number = 3;
   private defaultRetryDelay: number = 1000;
+  
+  // Normalize backend payloads to frontend types
+  private transformLicense(raw: any): License {
+    if (!raw) return raw as License;
+    // Map dokumen -> documents (no casing change for fields inside)
+    const { dokumen, ...rest } = raw as any;
+    const documents = Array.isArray(dokumen)
+      ? dokumen.map((d: any) => ({
+          ...d,
+          // Normalize to string to match Requirement.id type and strict compares
+          keperluan_dokumen_id: String(d.keperluan_dokumen_id),
+        }))
+      : [];
+    return {
+      ...rest,
+      documents,
+    } as License;
+  }
 
   constructor(config?: RequestConfig) {
     this.client = axios.create({
@@ -345,6 +373,127 @@ class ApiClient {
       this.client.get(`/audit/all-logs?page=${page}&per_page=${perPage}`)
     );
     return response.data;
+  }
+
+  // M02 License Management Methods
+
+  // License CRUD operations
+  async getLicenses(params?: LicenseListParams): Promise<LicenseListResponse> {
+    const response = await this.retryRequest(() =>
+      this.client.get<LicenseListResponse>('/m02/permohonan', { params })
+    );
+    return response.data;
+  }
+
+  async getLicense(id: string): Promise<License> {
+    const response = await this.retryRequest(() =>
+      this.client.get<{ permohonan: any }>(`/m02/permohonan/${id}`)
+    );
+    console.log('[ApiClient] Raw license response:', response.data.permohonan);
+    const transformed = this.transformLicense(response.data.permohonan);
+    console.log('[ApiClient] Transformed license:', transformed);
+    return transformed;
+  }
+
+  async createLicense(data: CreateLicenseRequest): Promise<License> {
+    const response = await this.retryRequest(() =>
+      this.client.post<{ message: string; permohonan: any }>(
+        '/m02/permohonan',
+        data
+      )
+    );
+    return this.transformLicense(response.data.permohonan);
+  }
+
+  async updateLicense(
+    id: string,
+    data: UpdateLicenseRequest
+  ): Promise<License> {
+    const response = await this.retryRequest(() =>
+      this.client.put<{ message: string; permohonan: any }>(`/m02/permohonan/${id}`, data)
+    );
+    return this.transformLicense(response.data.permohonan);
+  }
+
+  async submitLicense(id: string): Promise<void> {
+    await this.retryRequest(() =>
+      this.client.post(`/m02/permohonan/${id}/submit`)
+    );
+  }
+
+  async cancelLicense(id: string, reason: string): Promise<void> {
+    await this.retryRequest(() =>
+      this.client.post(`/m02/permohonan/${id}/cancel`, { reason })
+    );
+  }
+
+  // Document management
+  async uploadLicenseDocument(
+    licenseId: string,
+    file: File,
+    keperluanDokumenId: string
+  ): Promise<LicenseDocument> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('keperluan_dokumen_id', keperluanDokumenId);
+
+    const response = await this.retryRequest(() =>
+      this.client.post<{ message: string; dokumen: LicenseDocument }>(
+        `/m02/permohonan/${licenseId}/dokumen`,
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      )
+    );
+    return response.data.dokumen;
+  }
+
+  async deleteLicenseDocument(
+    licenseId: string,
+    documentId: string
+  ): Promise<void> {
+    await this.retryRequest(() =>
+      this.client.delete(`/m02/permohonan/${licenseId}/dokumen/${documentId}`)
+    );
+  }
+
+  // Catalog data
+  async getJenisLesen(): Promise<JenisLesen[]> {
+    const response = await this.retryRequest(() =>
+      this.client.get<JenisLesen[]>('/m02/jenis-lesen')
+    );
+
+    // Normalize jenis lesen IDs to strings for consistency
+    const normalized = Array.isArray(response.data)
+      ? response.data.map((jenis: any) => ({
+          ...jenis,
+          id: String(jenis.id),
+        }))
+      : [];
+
+    return normalized;
+  }
+
+  async getLicenseRequirements(jenisLesenId: string): Promise<Requirement[]> {
+    const response = await this.retryRequest(() =>
+      this.client.get<Requirement[]>(
+        `/m02/jenis-lesen/${jenisLesenId}/keperluan`
+      )
+    );
+    console.log('[ApiClient] Raw requirements response:', response.data);
+
+    // Normalize requirement IDs to strings to match document keperluan_dokumen_id
+    const normalized = Array.isArray(response.data)
+      ? response.data.map((req: any) => ({
+          ...req,
+          id: String(req.id),
+          jenis_lesen_id: String(req.jenis_lesen_id),
+        }))
+      : [];
+
+    console.log('[ApiClient] Normalized requirements:', normalized);
+    return normalized;
   }
 
   // Utility methods

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('actor_id')->nullable();
             $table->string('action', 100);
             $table->string('entity_type', 100);
-            $table->unsignedBigInteger('entity_id');
+            $table->string('entity_id', 100); // Support both integer IDs and UUIDs
             $table->json('meta')->nullable();
             $table->timestamp('created_at')->useCurrent();
 

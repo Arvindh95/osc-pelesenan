@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Models\Company;
 use App\Models\AuditLog;
+use App\Models\Permohonan;
 use App\Policies\CompanyPolicy;
 use App\Policies\AuditLogPolicy;
+use App\Policies\PermohonanPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -19,6 +21,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         Company::class => CompanyPolicy::class,
         AuditLog::class => AuditLogPolicy::class,
+        Permohonan::class => PermohonanPolicy::class,
     ];
 
     /**

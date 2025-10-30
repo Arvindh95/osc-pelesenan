@@ -24,7 +24,7 @@ class AuditService
     public function log(
         string $action,
         string $entityType,
-        int $entityId,
+        int|string $entityId,
         array $meta = [],
         ?User $actor = null
     ): AuditLog {

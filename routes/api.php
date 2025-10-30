@@ -7,6 +7,9 @@ use App\Http\Controllers\M01\ProfileController;
 use App\Http\Controllers\M01\CompanyController;
 use App\Http\Controllers\M01\AccountController;
 use App\Http\Controllers\M01\AuditLogController;
+use App\Http\Controllers\M02\PermohonanController;
+use App\Http\Controllers\M02\DokumenController;
+use App\Http\Controllers\M02\CatalogController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -75,5 +78,49 @@ Route::middleware(['feature:MODULE_M01', 'auth:sanctum', 'active.user'])->group(
         Route::get('all-logs', [AuditLogController::class, 'all'])
             ->name('all-logs')
             ->middleware('can:viewAny,App\Models\AuditLog');
+    });
+});
+
+// Module M02: Permohonan Lesen oleh Pemohon
+// Protected M02 routes - require authentication and feature flag
+Route::middleware(['feature:MODULE_M02', 'auth:sanctum', 'throttle:60,1'])->prefix('m02')->name('m02.')->group(function () {
+    
+    // Catalog routes - license types and requirements
+    Route::prefix('jenis-lesen')->name('jenis-lesen.')->group(function () {
+        Route::get('/', [CatalogController::class, 'getJenisLesen'])
+            ->name('index');
+        
+        Route::get('{jenisLesenId}/keperluan', [CatalogController::class, 'getKeperluanDokumen'])
+            ->name('keperluan');
+    });
+    
+    // Application management routes
+    Route::prefix('permohonan')->name('permohonan.')->group(function () {
+        Route::post('/', [PermohonanController::class, 'store'])
+            ->name('store');
+        
+        Route::get('/', [PermohonanController::class, 'index'])
+            ->name('index');
+        
+        Route::get('{permohonan}', [PermohonanController::class, 'show'])
+            ->name('show');
+        
+        Route::put('{permohonan}', [PermohonanController::class, 'update'])
+            ->name('update');
+        
+        Route::post('{permohonan}/submit', [PermohonanController::class, 'submit'])
+            ->name('submit');
+        
+        Route::post('{permohonan}/cancel', [PermohonanController::class, 'cancel'])
+            ->name('cancel');
+        
+        // Document management routes - stricter rate limiting
+        Route::middleware('throttle:30,1')->group(function () {
+            Route::post('{permohonan}/dokumen', [DokumenController::class, 'store'])
+                ->name('dokumen.store');
+            
+            Route::delete('{permohonan}/dokumen/{dokumen}', [DokumenController::class, 'destroy'])
+                ->name('dokumen.destroy');
+        });
     });
 });

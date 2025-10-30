@@ -17,10 +17,12 @@ class DatabaseSeeder extends Seeder
     {
         // Check if we're in development environment
         if (app()->environment(['local', 'development', 'testing'])) {
-            // Call seeders in proper order (users first, then companies)
+            // Call seeders in proper order (users first, then companies, then M02 catalog data)
             $this->call([
                 UserSeeder::class,
                 CompanySeeder::class,
+                JenisLesenSeeder::class,
+                KeperluanDokumenSeeder::class,
             ]);
         }
 
